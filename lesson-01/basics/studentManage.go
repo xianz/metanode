@@ -1,5 +1,9 @@
 package main
 
+/**
+学生管理：添加、修改、删除
+*/
+
 import (
 	"fmt"
 )
