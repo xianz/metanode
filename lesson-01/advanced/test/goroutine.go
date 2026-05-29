@@ -62,34 +62,51 @@ func closeChannelDemo() {
 // 模拟生产消费测试有缓冲channel
 func bufferedChannelDemo2() {
 	fmt.Println("==== 生产、消费 ====")
-	ch := make(chan int, 3)
-	fmt.Println("ready...")
-	time.Sleep(time.Second * 1)
-	// 写
+	ch := make(chan int, 1)
 	go func() {
-		for i := 0; i < 30; i++ {
-			fmt.Println("写：", i)
+		defer close(ch)
+		for i := 0; i < 3; i++ {
 			ch <- i
+			time.Sleep(time.Second)
 		}
 	}()
-	fmt.Println("~~")
 
-	// 读1
-	go func() {
-		for i := 0; i < 15; i++ {
-			fmt.Println("读1：", <-ch)
-			time.Sleep(time.Second * 2)
+	for {
+		data, ok := <-ch
+		if !ok {
+			break
 		}
-	}()
-	// 读2
-	go func() {
-		for i := 0; i < 15; i++ {
-			fmt.Println("读2：", <-ch)
-			time.Sleep(time.Second * 2)
-		}
-	}()
-	fmt.Println("~~~~")
-	time.Sleep(time.Second * 30)
+		fmt.Println("读 1：", data)
+	}
+	fmt.Scan()
+
+	// ch := make(chan int, 3)
+	// time.Sleep(time.Second * 1)
+	// // 写
+	// go func() {
+	// 	for i := 0; i < 30; i++ {
+	// 		fmt.Println("写：", i)
+	// 		ch <- i
+	// 	}
+	// }()
+	// fmt.Println("~~")
+
+	// // 读1
+	// go func() {
+	// 	for i := 0; i < 15; i++ {
+	// 		fmt.Println("读1：", <-ch)
+	// 		time.Sleep(time.Second * 2)
+	// 	}
+	// }()
+	// // 读2
+	// go func() {
+	// 	for i := 0; i < 15; i++ {
+	// 		fmt.Println("读2：", <-ch)
+	// 		time.Sleep(time.Second * 2)
+	// 	}
+	// }()
+	// fmt.Println("~~~~")
+	// time.Sleep(time.Second * 30)
 }
 
 // 多路复用，哪个先有数据就处理哪个
@@ -126,18 +143,18 @@ func selectDemo() {
 func timeoutDemo() {
 	fmt.Println("==== 阻塞超时 ====")
 	ch := make(chan int)
-
 	go func() {
-		time.Sleep(time.Second * 1)
-		ch <- 1
+		time.Sleep(time.Second * 2)
+		ch <- 11
 	}()
 
 	select {
 	case data := <-ch:
-		fmt.Println("data:", data)
-	case <-time.After(time.Second * 2):
-		fmt.Println("超时了")
+		fmt.Println("data", data)
+	case <-time.After(time.Second):
+		fmt.Println("已经超时了，走了")
 	}
+	fmt.Scan()
 }
 
 // 非阻塞（加default）
@@ -182,7 +199,7 @@ func loopSelect() {
 	for {
 		time.Sleep(time.Millisecond * 100)
 		select {
-		case val, ok := <-ch1: // 关闭的channel设为nil，select会忽略这个case（是的）
+		case val, ok := <-ch1: // 把不再需要匹配的channel设为nil（需先close），select会忽略这个case（是的）
 			fmt.Print("ch1 的 case：")
 			if !ok {
 				ch1 = nil
@@ -209,22 +226,19 @@ func loopSelect() {
 	}
 }
 
-// 使用退出信号（不适用close(ch)）来关闭
+// 使用退出信号（不使用close(ch)）来关闭
 func quitChannel() {
 	fmt.Println("==== quitChannel ====")
 	ch := make(chan int)
 	quit := make(chan bool)
 
 	go func() {
-		defer fmt.Println("break ed")
 		for {
 			select {
 			case data := <-ch:
-				fmt.Println("data：", data)
-				time.Sleep(time.Millisecond * 500)
+				fmt.Println("data:", data)
 			case <-quit:
 				fmt.Println("收到退出信号")
-				// break
 				return
 			}
 		}
@@ -232,21 +246,43 @@ func quitChannel() {
 
 	for i := 0; i < 5; i++ {
 		ch <- i
+		time.Sleep(time.Second)
 	}
 	quit <- true
-	fmt.Println("done")
+	fmt.Scan()
+}
+
+// 心跳模式
+func tickerDemo() {
+	fmt.Println("==== 心跳模式 ====")
+	messages := make(chan int)
+	ticker := time.NewTicker(time.Second * 1)
+	defer ticker.Stop()
+	i := 0
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Println("定期执行的任务")
+			if i++; i > 3 {
+				return
+			}
+		case data := <-messages:
+			fmt.Println("处理消息", data)
+		}
+	}
 
 }
 
 func main() {
 	// channelDemo()
 	// bufferedChannelDemo()
-	// bufferedChannelDemo2()
+	bufferedChannelDemo2()
 	// waitGroupDemo()
 	// closeChannelDemo()
 	// selectDemo()
 	// timeoutDemo()
 	// noBlockingDemo()
 	// loopSelect()
-	quitChannel()
+	// quitChannel()
+	// tickerDemo()
 }
