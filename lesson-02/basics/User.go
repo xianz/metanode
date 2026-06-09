@@ -94,7 +94,6 @@ func UpdateUserStatus(db *gorm.DB, ids []uint, status string) error {
 func DeleteInactiveUsers(db *gorm.DB) error {
 	cutoff := time.Now().AddDate(0, 0, -30)
 	err := db.Where("last_login_at < ?", cutoff).Delete(&User{}).Error
-
 	return err
 }
 
@@ -120,7 +119,7 @@ func ScopeAge(ageBegin, ageEnd int) func(db *gorm.DB) *gorm.DB {
 }
 
 var users = []User{
-	{Name: "Alice", Email: "alice@example.com", Age: 28, Status: "active"},
+	{Name: "Alice", Email: "alice@example.com", Age: 20, Status: "active"},
 	{Name: "Alice1", Email: "alice1@example.com", Age: 28, Status: "active"},
 	{Name: "Alice2", Email: "alice2@example.com", Age: 28, Status: "inactive"},
 	{Name: "Alice3", Email: "alice3@example.com", Age: 28, Status: "inactive"},

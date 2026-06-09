@@ -20,11 +20,11 @@ func main() {
 	}
 	fmt.Println("添加字段完成")
 
-	// 新增用户
-	if _, err := CreateUser(db, "张三", "zs@qq.com"); err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println("新增用户完成")
+	// // 新增用户
+	// if _, err := CreateUser(db, "张三", "zs@qq.com"); err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// fmt.Println("新增用户完成")
 
 	// 模糊查询
 	var emailPattern = "%2@%"
