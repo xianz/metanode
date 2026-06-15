@@ -55,26 +55,6 @@ func parseToken(tokenString string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func main() {
-	fmt.Println("JWT Auth")
-	r := gin.Default()
-	r.GET("/login", login)
-	v1 := r.Group("v1")
-	v1.Use(authMiddleware())
-	v1.GET("/protected", func(c *gin.Context) {
-		c.String(200, "Protected page")
-	})
-	v1.GET("/test", func(c *gin.Context) {
-		userID, _ := c.Get("userID")
-		username, _ := c.Get("username")
-		c.JSON(200, gin.H{
-			"userID":   userID,
-			"username": username,
-		})
-	})
-	r.Run(":8080")
-}
-
 // ========== 认证中间件（示例） ==========
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -167,5 +147,26 @@ func login(c *gin.Context) {
 			"username": req.Username,
 		},
 	})
+}
 
+func protectedContent(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	username, _ := c.Get("username")
+	c.JSON(200, gin.H{
+		"userID":   userID,
+		"username": username,
+	})
+}
+
+func main() {
+	fmt.Println("JWT Auth")
+	r := gin.Default()
+	r.GET("/login", login)
+
+	v1 := r.Group("v1")
+	v1.Use(authMiddleware())
+	v1.GET("/protected", protectedContent)
+	v1.GET("/test", protectedContent)
+
+	r.Run(":8080")
 }

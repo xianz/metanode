@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package main;
+
+// 生成的Go文件的"导入路径;包名"
+// 最终会生成文件的路径：<--go_out=目录> + <导入路径>
+option go_package = "./generated;pbtypes";
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+}
