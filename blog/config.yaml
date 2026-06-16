@@ -1,0 +1,21 @@
+
+server:
+  port: 8080
+  gin_mode: debug # debug, release, test
+
+database:
+  sqlite:
+    path: db/blog.db
+    table_prefix: blog_
+    log_mode: 4  # 4=Info 3=Warn 2=Error 1=Silent
+
+jwt:
+  secret: # 通过 .env 文件中的 BLOG_JWT_SECRET 设置环境变量
+  expire_hours: 23
+
+db:
+  host: 127.0.0.1.yaml
+  port: 1234
+  address: 127.0.0.1:6379.yaml
+  log_mode: 3
+  
