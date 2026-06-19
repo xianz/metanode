@@ -4,7 +4,6 @@ import (
 	"blog/models"
 	"blog/services"
 	"blog/utils"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -15,15 +14,16 @@ type BlogHandler struct {
 }
 
 func (bh *BlogHandler) CreateArticle(c *gin.Context) {
-	var req models.Post
+	var req models.ArticleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.HandleError(c, err)
 		return
 	}
 	if req.Title == "" || req.Content == "" {
-		utils.NewAppError(http.StatusBadRequest, "标题和内容不能为空")
+		utils.ValidateError(c, "标题和内容不能为空")
 		return
 	}
+	req.UserID = c.GetUint("user_id")
 	if _, err := bh.BlogService.CreateArticle(req); err != nil {
 		utils.HandleError(c, err)
 		return

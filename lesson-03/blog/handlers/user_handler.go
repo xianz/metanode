@@ -5,6 +5,7 @@ import (
 	"blog/models"
 	"blog/services"
 	"blog/utils"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,17 +16,17 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	var req models.User
+	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// fmt.Printf("%#v\n", err.Error())
 		utils.HandleError(c, err)
-		// utils.ValidateError(c, parseValidationErrors(err))
 		return
 	}
 
 	// 验证用户登录
 	if req.Username == "" || req.Password == "" {
 		utils.ValidateError(c, "用户名或密码不能为空")
+		fmt.Printf("%+v\n", &req)
 		return
 	}
 
@@ -36,14 +37,22 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// 生成jwt
+	token, err := utils.GenerateToken(h.JWTConfig, user.ID, user.Username)
+	if err != nil {
+		utils.HandleError(c, err)
+		return
+	}
+
 	// 登录成功
 	utils.Success(c, map[string]any{
-		"user": user,
+		"token": token,
+		"user":  user,
 	})
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
-	var req models.User
+	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.HandleError(c, err)
 		return
@@ -56,7 +65,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 
 	// 验证用户注册
-	user, err := h.UserService.CreateUser(req.Username, req.Password)
+	user, err := h.UserService.CreateUser(req)
 	if err != nil {
 		utils.HandleError(c, err)
 		return

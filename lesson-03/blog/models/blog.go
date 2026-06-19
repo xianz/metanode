@@ -7,7 +7,7 @@ import (
 type User struct {
 	gorm.Model `json:"-"`
 	Username   string `gorm:"uniqueIndex"`
-	Password   string `gorm:"not null"`
+	Password   string `gorm:"not null" json:"-"`
 	Email      string `gorm:"unique;not null"`
 }
 
@@ -17,6 +17,13 @@ type Post struct {
 	Content    string `gorm:"not null"`
 	UserID     uint   `gorm:"not null"`
 	Comments   []Comment
+}
+
+type Comment struct {
+	gorm.Model `json:"-"`
+	PostID     uint `gorm:"not null"`
+	UserID     uint
+	Content    string `gorm:"not null"`
 }
 
 type PostResponse struct {
@@ -33,9 +40,13 @@ type PostResponse struct {
 	// Comments []Comment `json:"comments,omitempty"` // Scan方法用不了
 }
 
-type Comment struct {
-	gorm.Model `json:"-"`
-	PostID     uint `gorm:"not null"`
-	UserID     uint
-	Content    string `gorm:"not null"`
+type UserRequest struct {
+	Username string
+	Password string
+}
+
+type ArticleRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	UserID  uint   //`json:"user_id"`
 }

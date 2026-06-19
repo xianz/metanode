@@ -23,9 +23,9 @@ func NewBlogService(db *gorm.DB) *BlogService {
 	}
 }
 
-func (bs *BlogService) CreateArticle(req models.Post) (*models.Post, error) {
+func (bs *BlogService) CreateArticle(req models.ArticleRequest) (*models.Post, error) {
 	var post models.Post
-	if err := bs.Db.Create(&req).Error; err != nil {
+	if err := bs.Db.Table("blog_posts").Create(&req).Error; err != nil {
 		return nil, err
 	}
 	return &post, nil
@@ -52,7 +52,7 @@ func (bs *BlogService) GetArticle(id int) (*models.Post, error) {
 
 func (bs *BlogService) ListArticles(pageSize, page int) (ListArticlesResponse, error) {
 	var rs []models.PostResponse
-	result := bs.scopePage(pageSize, page).Model(&models.Post{}).Scan(&rs)
+	result := bs.scopePage(pageSize, page).Table("blog_posts").Scan(&rs)
 	if result.Error != nil {
 		return ListArticlesResponse{}, result.Error
 	}

@@ -40,10 +40,10 @@ func (us *UserService) Authenticate(username, password string) (*models.User, er
 	return &user, nil
 }
 
-func (us *UserService) CreateUser(username, password string) (*models.User, error) {
+func (us *UserService) CreateUser(req models.UserRequest) (*models.User, error) {
 	var user models.User
-	user.Username = username
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	user.Username = req.Username
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
