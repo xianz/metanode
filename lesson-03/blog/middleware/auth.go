@@ -1,51 +1,42 @@
 package middleware
 
 import (
+	"blog/utils"
 	"net/http"
 	"strings"
-
-	"blog/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ========== 认证中间件（示例） ==========
-func AuthMiddleware() gin.HandlerFunc {
+func Auth(jwtSecret []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		headerAuth := c.GetHeader("Authorization")
+		//// 不能为空
 		if headerAuth == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Authorization header required",
-			})
+			utils.Error(c, http.StatusUnauthorized, "Authorization header required", nil)
 			c.Abort()
 			return
 		}
-
-		////验证 Token
+		//// 开始验证
 		// 提取
 		parts := strings.Split(headerAuth, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid authorization header format",
-			})
+			utils.Error(c, http.StatusUnauthorized, "Invalid Authorization header format", nil)
 			c.Abort()
 			return
 		}
 		// 验证
-		tokenString := parts[1]
-		claims, err := (&utils.JWTManager{}).ParseToken(tokenString)
+		token := parts[1]
+		claims, err := utils.ParseToken(jwtSecret, token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid token",
-			})
+			utils.Error(c, http.StatusUnauthorized, "Invalid token", err)
 			c.Abort()
 			return
 		}
-
 		// 将用户信息存储到 Context
 		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
-
+		// 继续处理请求
 		c.Next()
 	}
 }
