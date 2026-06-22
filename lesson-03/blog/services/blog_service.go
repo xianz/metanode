@@ -23,23 +23,39 @@ func NewBlogService(db *gorm.DB) *BlogService {
 	}
 }
 
-func (bs *BlogService) CreateArticle(req models.ArticleRequest) (*models.Post, error) {
-	var post models.Post
-	if err := bs.Db.Table("blog_posts").Create(&req).Error; err != nil {
-		return nil, err
+// 添加
+func (bs *BlogService) CreateArticle(req models.PostRequest) (int64, error) {
+	result := bs.Db.Create(&models.Post{
+		Title:   req.Title,
+		Content: req.Content,
+		UserID:  req.UserID,
+	})
+	if result.Error != nil {
+		return 0, result.Error
 	}
-	return &post, nil
+	return result.RowsAffected, nil
 }
 
-func (bs *BlogService) UpdateArticle() {
-
+// 更新
+func (bs *BlogService) UpdateArticle(id int64, req models.PostRequest) (int64, error) {
+	result := bs.Db.Model(&models.Post{}).Where("id = ?", id).Updates(req)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return result.RowsAffected, nil
 }
 
-func (bs *BlogService) DeleteArticle(id int) error {
-	return bs.Db.Delete(&models.Post{}, id).Error
+// 删除
+func (bs *BlogService) DeleteArticle(id int64) (int64, error) {
+	result := bs.Db.Delete(&models.Post{}, id)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return result.RowsAffected, nil
 }
 
-func (bs *BlogService) GetArticle(id int) (*models.Post, error) {
+// 详细
+func (bs *BlogService) GetArticle(id int64) (*models.Post, error) {
 	var post models.Post
 	if err := bs.Db.Where("id = ?", id).Preload("Comments").First(&post).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -50,11 +66,12 @@ func (bs *BlogService) GetArticle(id int) (*models.Post, error) {
 	return &post, nil
 }
 
-func (bs *BlogService) ListArticles(pageSize, page int) (ListArticlesResponse, error) {
+// 列表
+func (bs *BlogService) ListArticles(pageSize, page int) (any, error) {
 	var rs []models.PostResponse
-	result := bs.scopePage(pageSize, page).Table("blog_posts").Scan(&rs)
+	result := bs.scopePage(pageSize, page).Model(&models.Post{}).Scan(&rs)
 	if result.Error != nil {
-		return ListArticlesResponse{}, result.Error
+		return nil, result.Error
 	}
 	// data, _ := json.Marshal(rs)
 	// log.Printf("!!!!!%+v\n", string(data))

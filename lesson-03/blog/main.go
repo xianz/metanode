@@ -21,10 +21,10 @@ func main() {
 
 	gin.SetMode(cfg.Server.GinMode)
 
-	userService := &services.UserService{Db: db}
-	userHandler := &handlers.UserHandler{UserService: userService, JWTConfig: &cfg.Jwt}
-	blogService := &services.BlogService{Db: db}
-	blogHandler := &handlers.BlogHandler{BlogService: blogService}
+	us := &services.UserService{Db: db}
+	userHandler := &handlers.UserHandler{UserService: us, JWTConfig: &cfg.Jwt}
+	blogHandler := &handlers.BlogHandler{BlogService: &services.BlogService{Db: db}}
+	commentHandler := &handlers.CommentHandler{CommentService: &services.CommentService{Db: db}}
 
 	//// 创建Gin实例
 	route := gin.Default()
@@ -39,6 +39,8 @@ func main() {
 	public.GET("/articles", blogHandler.ListArticles)
 	// 文章详情
 	public.GET("/articles/:id", blogHandler.GetArticle)
+	// 查看所有评论
+	public.GET("/comments", commentHandler.GetComments)
 
 	//注册
 	public.POST("/users", userHandler.Register)
@@ -52,11 +54,13 @@ func main() {
 	protected.Use(middleware.Auth([]byte(cfg.Jwt.Secret)))
 	{
 		// 创建文章
-		protected.PUT("/articles", blogHandler.CreateArticle)
+		protected.POST("/articles", blogHandler.CreateArticle)
 		// 更新文章
-		protected.POST("/articles/:id", blogHandler.UpdateArticle)
+		protected.PUT("/articles/:id", blogHandler.UpdateArticle)
 		// 删除文章
 		protected.DELETE("/articles/:id", blogHandler.DeleteArticle)
+		// 创建评论
+		protected.POST("/comments", commentHandler.CreateComment)
 	}
 
 	// // 退出

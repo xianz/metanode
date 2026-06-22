@@ -17,7 +17,7 @@ func Auth(jwtSecret []byte) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		//// 开始验证
+		//// 开始验证解码
 		// 提取
 		parts := strings.Split(headerAuth, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
@@ -25,7 +25,7 @@ func Auth(jwtSecret []byte) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// 验证
+		// 验证解码
 		token := parts[1]
 		claims, err := utils.ParseToken(jwtSecret, token)
 		if err != nil {

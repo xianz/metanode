@@ -40,20 +40,24 @@ func (us *UserService) Authenticate(username, password string) (*models.User, er
 	return &user, nil
 }
 
-func (us *UserService) CreateUser(req models.UserRequest) (*models.User, error) {
+func (us *UserService) CreateUser(req models.UserRequest) (int64, error) {
 	var user models.User
 	user.Username = req.Username
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	user.Password = string(hashedPassword)
-	err = us.Db.Create(&user).Error
-	if err != nil {
-		if err.Error() == "UNIQUE constraint failed: users.username" {
-			return nil, utils.NewAppError(409, "用户名已存在")
+	user.Email = req.Email
+	result := us.Db.Model(&models.User{}).Create(&user)
+	if result.Error != nil {
+		if utils.RegexpMatch(result.Error.Error(), `^UNIQUE constraint failed: \w+_users\.\w+$`) {
+			return 0, utils.NewAppError(409, "用户名或邮箱已存在")
 		}
-		return nil, err
+		// if err.Error() == "UNIQUE constraint failed: blog_users.username" {
+		// 	return nil, utils.NewAppError(409, "用户名已存在")
+		// }
+		return 0, result.Error
 	}
-	return &user, nil
+	return result.RowsAffected, nil
 }

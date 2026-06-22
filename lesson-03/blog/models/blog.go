@@ -21,8 +21,8 @@ type Post struct {
 
 type Comment struct {
 	gorm.Model `json:"-"`
-	PostID     uint `gorm:"not null"`
-	UserID     uint
+	PostID     uint   `gorm:"not null"`
+	UserID     uint   `gorm:"not null"`
 	Content    string `gorm:"not null"`
 }
 
@@ -36,17 +36,24 @@ type PostResponse struct {
 	ID      uint
 	Title   string
 	Content string
-	userID  uint
+	UserID  uint
 	// Comments []Comment `json:"comments,omitempty"` // Scan方法用不了
 }
 
-type UserRequest struct {
-	Username string
-	Password string
+type PostRequest struct {
+	// ID      uint
+	Title   string // `json:"title"`
+	Content string //`json:"content"`
+	UserID  uint
 }
 
-type ArticleRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	UserID  uint   //`json:"user_id"`
+type UserRequest struct {
+	Username string `validate:"required,min=3,max=20,alphanum" json:"username" label:"用户名"`
+	Password string `validate:"required,min=8,max=32,containsany=!@#$%^&*" json:"password" label:"密码"`
+	Email    string `validate:"required,email" json:"email" label:"邮箱"`
+}
+
+type ListCommentResponse struct {
+	Comments     []Comment `json:"comments"`
+	RowsAffected int       `json:"rows_affected"`
 }

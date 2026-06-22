@@ -1,36 +1,20 @@
 ## 博客服务端接口
 
+使用Gin框架构建的 RESTful API，实现了博客的大部分主要功能，包括博客文章的添加、修改、删除、查询列表、查看正文详情（包括所有评论），同时编辑、删除和评论功能实现了需要使用JWT用户认证。
 
+### 运行环境
 
-#### 公开接口 
+* Golang 版本 >= 1.18 （使用到了any类型）
+* ./data/文件夹可读写（0755）
 
-* 博客列表
+### 启动步骤
 
-  GET：/blog/list
+1. 安装依赖：`go mod tidy` 
+2. 启动项目：`go run main.go` 
+3. 初始化项目：请求接口`/api/v1/automigrate`
+4. 请求其他的接口
 
-* 博客详细页
+### 测试用例 
 
-  GET：/blog/detail
-
-* 登录
-
-  POST ：/login
-
-  表单参数：username、password
-
-#### 私有接口
-
-* 修改文章
-
-  POST：/api/blog/edit
-
-  参数：
-
-* 删除文章
-
-  POST：/api/blog/delete
-
-  参数：
-
-
+见 `博客后端.md` 测试用例文件
 
